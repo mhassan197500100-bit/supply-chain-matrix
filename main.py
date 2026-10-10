@@ -25,26 +25,51 @@ if "log_book" not in st.session_state:
     st.session_state.log_book = load_local_database()
 
 # ==========================================================
-# 🔒 PANEL A: SECURE LOGIN CONTROL SHIELD
+# 🔒 PANEL A: SECURE LOGIN & RECOVERY CONTROL SHIELD
 # ==========================================================
 if not st.session_state.authenticated:
     st.title("🔐 Enterprise Portal Authentication")
     st.write("---")
     
-    col_login, _ = st.columns(2)
+    # Core User Accounts Directory Database Registry
+    USER_REGISTRY = {
+        "admin": {"pass": "uet123", "secret_hint": "University Initial?", "answer": "uet"},
+        "hassan": {"pass": "secure786", "secret_hint": "First School Name?", "answer": "uet school"},
+        "client": {"pass": "boutique2026", "secret_hint": "Your Brand City?", "answer": "lahore"}
+    }
+    
+    col_login, _ = st.columns([1, 1])
     with col_login:
         username = st.text_input("User Identification ID")
         password = st.text_input("Security Access Code", type="password")
         
         if st.button("🔐 Authorize Access Handshake"):
-            # Clean hardcoded credentials perfect for viva oral defenses
-            if username == "admin" and password == "uet123":
+            if username in USER_REGISTRY and password == USER_REGISTRY[username]["pass"]:
                 st.session_state.authenticated = True
-                st.success("Handshake Established. Initializing workspaces...")
+                st.success(f"Handshake Established. Welcome back, {username}!")
                 st.rerun()
             else:
                 st.error("Authentication Failed: Invalid user signature or access keys.")
-    st.stop()  # Strict block prevents layout loading if not authenticated
+        
+        # 🛡️ THE FORGOT PASSWORD RECOVERY INTERFACE
+        st.write("---")
+        with st.expander("❓ Forgot Access Code? Initialize System Recovery"):
+            st.info("💡 Enter your ID and answer your security matrix question to recover your access key.")
+            recovery_user = st.text_input("Enter Target Account ID")
+            
+            if recovery_user in USER_REGISTRY:
+                st.warning(f"**Security Hint:** {USER_REGISTRY[recovery_user]['secret_hint']}")
+                security_answer = st.text_input("Enter Secret Recovery Answer", type="password", key="rec_ans")
+                
+                if st.button("🔓 Verify Recovery Token Key"):
+                    if security_answer.strip().lower() == USER_REGISTRY[recovery_user]["answer"].lower():
+                        st.success(f"🔑 **Recovery Cleared:** The password for account '{recovery_user}' is: **`{USER_REGISTRY[recovery_user]['pass']}`**")
+                    else:
+                        st.error("Recovery Verification Failed: Incorrect secret answer patch.")
+            elif recovery_user:
+                st.error("Account ID not found inside local system registries.")
+                
+    st.stop()  # Strict block prevents interface dashboard loading if not authenticated
 
 # ==========================================================
 # 🧭 PANEL B: MULTI-PAGE WORKSPACE NAVIGATION
@@ -106,8 +131,7 @@ if current_page == "📋 Interactive Cost Matrix":
     st.write("")
     if st.button("💾 Log Current Calculation to Permanent Ledger"):
         new_entry = {
-            # UPDATED: Now records the complete Date and Year along with the time stamp
-            "Timestamp": datetime.now().strftime("%d-%b-%Y %I:%M:%S %p"),
+            "Timestamp": datetime.now().strftime("%I:%M:%S %p"),
             "Product Style": selected_bag,
             "Quality Tier": selected_quality.split(" ("),
             "Distance (KM)": distance,
@@ -117,7 +141,7 @@ if current_page == "📋 Interactive Cost Matrix":
         }
         st.session_state.log_book.append(new_entry)
         
-        # Instantly dump running database list onto your Desktop hard drive disk space
+        # Instantly dump running database list onto cloud/local storage disk
         pd.DataFrame(st.session_state.log_book).to_csv(LOG_FILE_PATH, index=False)
         st.success(f"✅ Calculation safely secured into permanent database disk memory!")
 
